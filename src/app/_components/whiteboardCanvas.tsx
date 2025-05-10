@@ -41,6 +41,8 @@ function WhiteboardCanvas() {
 		if (currentPath.length > 0) {
 			setDrawingActions([...drawingActions, { path: currentPath, style: currentStyle }]);
 		}
+
+		setCurrentPath([]);
 	}
 
 	const changeColor = (color: string) => {
@@ -119,16 +121,14 @@ function WhiteboardCanvas() {
 		}
 	}, [reDrawPreviousData]);
 
-	return <div>
-		<canvas
+	return <canvas
 			ref={canvasRef}
 			onMouseDown={startDrawing}
 			onMouseMove={draw}
 			onMouseUp={endDrawing}
 			onMouseOut={endDrawing}
 			onBlur={endDrawing}
-			className="border border-gray-400" />
-	</div>;
+			className="border border-gray-400" />;
 }
 
 export default WhiteboardCanvas;
