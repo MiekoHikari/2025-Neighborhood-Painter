@@ -6,66 +6,91 @@ function WhiteboardCanvas() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
 	const [drawing, setDrawing] = useState(false);
-	const [currentColor, setCurrentColor] = useState("#000000");
-	const [lineWidth, setLineWidth] = useState(3);
-	const [drawingActions, setDrawingActions] = useState<{ path: { x: number; y: number }[]; style: { color: string; lineWidth: number } }[]>([]);
-	const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
+	const [currentColor, setCurrentColor] = useState("#FF0000");
+	const [lineWidth, setLineWidth] = useState(5);
+	const [drawingActions, setDrawingActions] = useState<
+		{
+			path: { x: number; y: number }[];
+			style: { color: string; lineWidth: number };
+		}[]
+	>([]);
+	const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>(
+		[],
+	);
 	const [currentStyle, setCurrentStyle] = useState({
-		color: "#000000",
-		lineWidth: 3,
+		color: currentColor,
+		lineWidth: lineWidth,
 	});
 
-	const startDrawing = (e: React.MouseEvent) => {
-		if (context) {
-			context.beginPath();
-			context.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-			setDrawing(true);
-		}
-	};
+	const startDrawing = useCallback(
+		(e: React.MouseEvent) => {
+			if (context) {
+				context.beginPath();
+				context.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+				setDrawing(true);
+			}
+		},
+		[context],
+	);
 
-	const draw = (e: React.MouseEvent) => {
-		if (!drawing) return;
-		if (context) {
-			context.strokeStyle = currentStyle.color;
-			context.lineWidth = currentStyle.lineWidth;
-			context.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-			context.stroke();
-			setCurrentPath([...currentPath, { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY }]);
-		}
-	};
+	const draw = useCallback(
+		(e: React.MouseEvent) => {
+			if (!drawing) return;
+			if (context) {
+				context.strokeStyle = currentStyle.color;
+				context.lineWidth = currentStyle.lineWidth;
+				context.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+				context.stroke();
+				setCurrentPath((prevPath) => [
+					...prevPath,
+					{ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY },
+				]);
+			}
+		},
+		[drawing, context, currentStyle],
+	);
 
-	const endDrawing = () => {
+	const endDrawing = useCallback(() => {
 		setDrawing(false);
 		if (context) context.closePath();
 
 		if (currentPath.length > 0) {
-			setDrawingActions([...drawingActions, { path: currentPath, style: currentStyle }]);
+			setDrawingActions((prevActions) => [
+				...prevActions,
+				{ path: currentPath, style: currentStyle },
+			]);
 		}
 
 		setCurrentPath([]);
-	}
+	}, [context, currentPath, currentStyle]);
 
-	const changeColor = (color: string) => {
+	const changeColor = useCallback((color: string) => {
 		setCurrentColor(color);
-		setCurrentStyle({ ...currentStyle, color });
-	};
+		setCurrentStyle((prevStyle) => ({ ...prevStyle, color }));
+	}, []);
 
-	const changeWidth = (width: number) => {
+	const changeWidth = useCallback((width: number) => {
 		setLineWidth(width);
-		setCurrentStyle({ ...currentStyle, lineWidth: width });
-	}
+		setCurrentStyle((prevStyle) => ({ ...prevStyle, lineWidth: width }));
+	}, []);
 
-	const undoDrawing = () => {
-		if (drawingActions.length > 0) {
-			drawingActions.pop();
+	const undoDrawing = useCallback(() => {
+		setDrawingActions((prevActions) => {
+			const updatedActions = [...prevActions];
+			updatedActions.pop();
 
 			if (canvasRef.current) {
 				const newContext = canvasRef.current?.getContext("2d");
-				
-				if (newContext) {
-					newContext?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
-					for (const { path, style } of drawingActions) {
+				if (newContext) {
+					newContext.clearRect(
+						0,
+						0,
+						canvasRef.current.width,
+						canvasRef.current.height,
+					);
+
+					for (const { path, style } of updatedActions) {
 						newContext.beginPath();
 						newContext.strokeStyle = style.color;
 						newContext.lineWidth = style.lineWidth;
@@ -79,35 +104,46 @@ function WhiteboardCanvas() {
 					}
 				}
 			}
-		}
-	}
 
-	const clearDrawing = () => {
+			return updatedActions;
+		});
+	}, []);
+
+	const clearDrawing = useCallback(() => {
 		setDrawingActions([]);
 		setCurrentPath([]);
 
 		const newContext = canvasRef.current?.getContext("2d");
 		if (newContext) {
-			canvasRef.current && newContext.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+			canvasRef.current &&
+				newContext.clearRect(
+					0,
+					0,
+					canvasRef.current.width,
+					canvasRef.current.height,
+				);
 		}
-	}
+	}, []);
 
-	const reDrawPreviousData = useCallback((ctx: CanvasRenderingContext2D | null) => {
-		for (const { path, style } of drawingActions) {
-			if (ctx) {
-				ctx.beginPath();
-				ctx.strokeStyle = style.color;
-				ctx.lineWidth = style.lineWidth;
-				path[0] && ctx.moveTo(path[0].x, path[0].y);
+	const reDrawPreviousData = useCallback(
+		(ctx: CanvasRenderingContext2D | null) => {
+			for (const { path, style } of drawingActions) {
+				if (ctx) {
+					ctx.beginPath();
+					ctx.strokeStyle = style.color;
+					ctx.lineWidth = style.lineWidth;
+					path[0] && ctx.moveTo(path[0].x, path[0].y);
 
-				for (const point of path) {
-					ctx.lineTo(point.x, point.y);
+					for (const point of path) {
+						ctx.lineTo(point.x, point.y);
+					}
+
+					ctx.stroke();
 				}
-
-				ctx.stroke();
 			}
-		}
-	}, [drawingActions]);
+		},
+		[drawingActions],
+	);
 
 	useEffect(() => {
 		if (canvasRef.current) {
@@ -121,14 +157,17 @@ function WhiteboardCanvas() {
 		}
 	}, [reDrawPreviousData]);
 
-	return <canvas
+	return (
+		<canvas
 			ref={canvasRef}
 			onMouseDown={startDrawing}
 			onMouseMove={draw}
 			onMouseUp={endDrawing}
 			onMouseOut={endDrawing}
 			onBlur={endDrawing}
-			className="border border-gray-400" />;
+			className="border border-gray-400"
+		/>
+	);
 }
 
 export default WhiteboardCanvas;
