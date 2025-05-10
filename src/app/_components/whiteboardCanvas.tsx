@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function WhiteboardCanvas() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -13,18 +13,6 @@ function WhiteboardCanvas() {
 	const [currentStyle, setCurrentStyle] = useState({
 		color: "#000000",
 		lineWidth: 3,
-	});
-
-	useEffect(() => {
-		if (canvasRef.current) {
-			const canvas = canvasRef.current;
-			canvas.width = 900;
-			canvas.height = 500;
-
-			const ctx = canvas.getContext("2d");
-			setContext(ctx);
-			reDrawPreviousData(ctx);
-		}
 	});
 
 	const startDrawing = (e: React.MouseEvent) => {
@@ -102,8 +90,8 @@ function WhiteboardCanvas() {
 		}
 	}
 
-	const reDrawPreviousData = (ctx: CanvasRenderingContext2D | null) => {
-		for (const {path, style} of drawingActions) {
+	const reDrawPreviousData = useCallback((ctx: CanvasRenderingContext2D | null) => {
+		for (const { path, style } of drawingActions) {
 			if (ctx) {
 				ctx.beginPath();
 				ctx.strokeStyle = style.color;
@@ -117,7 +105,19 @@ function WhiteboardCanvas() {
 				ctx.stroke();
 			}
 		}
-	}
+	}, [drawingActions]);
+
+	useEffect(() => {
+		if (canvasRef.current) {
+			const canvas = canvasRef.current;
+			canvas.width = 900;
+			canvas.height = 500;
+
+			const ctx = canvas.getContext("2d");
+			setContext(ctx);
+			reDrawPreviousData(ctx);
+		}
+	}, [reDrawPreviousData]);
 
 	return <div>
 		<canvas
