@@ -14,16 +14,27 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Team {
+    id          String   @id @default(cuid())
+    name        String   @db.VarChar(255)
+    owner_user_id   String
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+    uniqueId String @unique
 
-    @@index([name])
+    user        User    @relation(fields: [owner_user_id], references: [id], onDelete: Cascade)
+    userTeam    UserTeam[]
+}
+
+model UserTeam {
+    id          String   @id @default(cuid())
+    user_id     String
+    team_id     String
+    role        String   @db.VarChar(255)
+
+    user        User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    team        Team    @relation(fields: [team_id], references: [id], onDelete: Cascade)
+
+    @@unique([user_id, team_id])
 }
 
 // Necessary for Next auth
@@ -62,7 +73,9 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+
+    Team          Team[]
+    UserTeam      UserTeam[]
 }
 
 model VerificationToken {
