@@ -5,18 +5,21 @@ import { Card, CardContent } from "~/app/_components/ui/card";
 import { FaDiscord, FaGithub, FaSlack } from "react-icons/fa";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 
 export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
 	const [isLoading, setIsLoading] = useState<string | null>(null);
+	const searchParams = useSearchParams();
 
 	const handleAuthClick = (provider: string) => {
 		setIsLoading(provider);
-		signIn(provider).then(() => {
-			setIsLoading(null);
-		});
+		signIn(provider, {
+			redirectTo: searchParams.get("callbackUrl") || "/",
+		})
 	};
 
 	return (
