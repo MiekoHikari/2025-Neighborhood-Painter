@@ -1,6 +1,8 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { DefaultSession, NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import GithubProvider from "next-auth/providers/github";
+import SlackProvider from "next-auth/providers/slack";
 
 import { db } from "~/server/db";
 
@@ -32,7 +34,15 @@ declare module "next-auth" {
  */
 export const authConfig = {
 	providers: [
-		DiscordProvider,
+		DiscordProvider({
+			allowDangerousEmailAccountLinking: true,
+		}),
+		SlackProvider({
+			allowDangerousEmailAccountLinking: true,
+		}),
+		GithubProvider({
+			allowDangerousEmailAccountLinking: true,
+		}),
 		/**
 		 * ...add more providers here.
 		 *
@@ -52,5 +62,8 @@ export const authConfig = {
 				id: user.id,
 			},
 		}),
+	},
+	pages: {
+		signIn: "/auth/login",
 	},
 } satisfies NextAuthConfig;
