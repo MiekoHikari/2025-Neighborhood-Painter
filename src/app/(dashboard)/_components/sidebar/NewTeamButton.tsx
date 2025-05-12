@@ -1,32 +1,37 @@
 "use client";
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { PlusIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Button } from "~/app/_components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "~/app/_components/ui/dialog";
+import React from "react";
 import NewTeamForm from "~/app/_components/teams/newTeamForm";
+import { Button } from "~/app/_components/ui/button";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogTrigger,
+} from "~/app/_components/ui/dialog";
 
 function NewTeamButton() {
-	const [isDialogOpen, setIsDialogOpen] = useState(false);
-
 	return (
-		<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+		<Dialog>
 			<DialogTrigger asChild>
 				<div className="aspect-square">
 					<Button
 						variant="secondary"
 						className="h-full w-full rounded-full p-0"
-						onClick={() => setIsDialogOpen(true)}
-						aria-label="Create new team"
 					>
 						<PlusIcon className="h-6 w-6 text-blue-500" />
 					</Button>
 				</div>
 			</DialogTrigger>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle className="text-center">Create New Team</DialogTitle>
-					<DialogDescription className="text-center">Be a part of a group or create one! The neighborhood isn't that quiet ❤️</DialogDescription>
-				</DialogHeader>
+			<DialogContent>
+				<DialogTitle className="text-center font-semibold text-lg">
+					Let's create a new team!
+					<div className="text-muted-foreground text-sm">
+						You can create a new team to manage your projects and collaborate
+						with others.
+					</div>
+				</DialogTitle>
 				<NewTeamForm />
 			</DialogContent>
 		</Dialog>
