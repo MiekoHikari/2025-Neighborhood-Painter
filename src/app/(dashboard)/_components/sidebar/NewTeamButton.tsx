@@ -12,8 +12,10 @@ import {
 } from "~/app/_components/ui/dialog";
 
 function NewTeamButton() {
+	const [DialogClose, setDialogClosed] = React.useState(false);
+
 	return (
-		<Dialog>
+		<Dialog open={DialogClose} onOpenChange={setDialogClosed}>
 			<DialogTrigger asChild>
 				<div className="aspect-square">
 					<Button
@@ -32,7 +34,7 @@ function NewTeamButton() {
 						with others.
 					</div>
 				</DialogTitle>
-				<NewTeamForm />
+				<NewTeamForm setDialogClosed={setDialogClosed} />
 			</DialogContent>
 		</Dialog>
 	);

@@ -14,10 +14,10 @@ import {
 	FormMessage,
 } from "../ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ImageIcon, Loader2, PlusIcon, UploadCloud } from "lucide-react";
+import { Loader2, PlusIcon, UploadCloud } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { DialogClose } from "../ui/dialog";
+import { api } from "~/trpc/react";
 
 // TODO: Add slug to schema
 // TODO: Implement feature to handle creating new Teams
@@ -25,6 +25,7 @@ import { DialogClose } from "../ui/dialog";
 // TODO: Fix Issue with image upload being so tiny
 // TODO: Validate image files properly
 // Pass in Dialog props to form
+// File Size Limit 10MB
 
 const formSchema = z.object({
 	name: z.string().min(2, {
@@ -44,9 +45,17 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-function NewTeamForm() {
+interface NewTeamFormProps {
+	setDialogClosed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+function NewTeamForm({ setDialogClosed }: NewTeamFormProps) {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [submitStatus, setSubmitStatus] = useState<string | null>(null);
+
+	const preSigner = api.s3.create.useMutation();
+	const teamCreator = api.team.create.useMutation();
 
 	const form = useForm<FormData>({
 		resolver: zodResolver(formSchema),
@@ -59,12 +68,40 @@ function NewTeamForm() {
 	async function onSubmit(data: FormData) {
 		try {
 			setIsSubmitting(true);
-			console.log(data);
+			setSubmitStatus("Uploading...");
 
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			if (data.image) {
+				setSubmitStatus("Creating Team...");
+				const iconObjectKey = `${data.slug}/icon.${data.image?.name.split(".").pop()}`;
 
-			form.reset();
-			setImagePreview(null);
+				await teamCreator.mutateAsync({
+					name: data.name,
+					slug: data.slug,
+					icon: iconObjectKey,
+				});
+
+				setSubmitStatus("Uploading Icon...");
+
+				const presignedUrl = await preSigner.mutateAsync({
+					slug: data.slug,
+					objectKey: iconObjectKey,
+				});
+
+				const uploadResponse = await fetch(presignedUrl, {
+					method: "PUT",
+					headers: {
+						"Content-Type": data.image.type,
+					},
+					body: data.image,
+				});
+
+				if (!uploadResponse.ok) {
+					throw new Error("Failed to upload image to S3");
+				}
+
+				form.reset();
+				setDialogClosed(true);
+			}
 		} catch (error) {
 			console.error("Error creating team:", error);
 		} finally {
@@ -87,6 +124,8 @@ function NewTeamForm() {
 	const resetForm = () => {
 		form.reset();
 		setImagePreview(null);
+		setSubmitStatus(null);
+		setIsSubmitting(false);
 	};
 
 	useEffect(() => {
@@ -169,20 +208,15 @@ function NewTeamForm() {
 					)}
 				/>
 				<div className="flex items-center justify-between">
-					{/* <DialogClose type="button" onClick={() => resetForm()}> */}
 					<Button
 						type="button"
 						variant="outline"
-						onClick={() => {
-							form.reset();
-							setImagePreview(null);
-						}}
+						onClick={() => resetForm()}
 						data-slot="dialog-close"
 						disabled={isSubmitting}
 					>
 						Cancel
 					</Button>
-					{/* </DialogClose> */}
 					<Button
 						type="submit"
 						disabled={isSubmitting}
@@ -190,7 +224,8 @@ function NewTeamForm() {
 					>
 						{isSubmitting ? (
 							<>
-								<Loader2 className="animate-spin" /> Create Team
+								<Loader2 className="animate-spin" />{" "}
+								{submitStatus ?? "Create Team"}
 							</>
 						) : (
 							"Create Team"

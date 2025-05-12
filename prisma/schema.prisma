@@ -17,12 +17,28 @@ datasource db {
 model Team {
     id          String   @id @default(cuid())
     name        String   @db.VarChar(255)
-    owner_user_id   String
+    owner_user_id       String
+    icon        String? @db.VarChar(255)
 
     uniqueId String @unique
 
     user        User    @relation(fields: [owner_user_id], references: [id], onDelete: Cascade)
     userTeam    UserTeam[]
+
+    S3Grants S3Grants[]
+}
+
+model S3Grants {
+    id          String   @id @default(cuid())
+    key         String   @db.VarChar(255) @unique
+    team_id     String
+    url         String   @db.VarChar(255)
+    created_at DateTime @default(now())
+    expired_at DateTime?
+
+    team       Team    @relation(fields: [team_id], references: [id], onDelete: Cascade)
+
+    @@unique([key, team_id])
 }
 
 model UserTeam {
