@@ -18,6 +18,10 @@ export const env = createEnv({
 		AUTH_GITHUB_ID: z.string(),
 		AUTH_GITHUB_SECRET: z.string(),
 		DATABASE_URL: z.string().url(),
+		AWS_BUCKET_NAME: z.string(),
+		AWS_BUCKET_REGION: z.string(),
+		AWS_ACCESS_KEY: z.string(),
+		AWS_ACCESS_SECRET: z.string(),
 		NODE_ENV: z
 			.enum(["development", "test", "production"])
 			.default("development"),
@@ -46,6 +50,10 @@ export const env = createEnv({
 		AUTH_GITHUB_SECRET: process.env.AUTH_GITHUB_SECRET,
 		DATABASE_URL: process.env.DATABASE_URL,
 		NODE_ENV: process.env.NODE_ENV,
+		AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+		AWS_BUCKET_REGION: process.env.AWS_BUCKET_REGION,
+		AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
+		AWS_ACCESS_SECRET: process.env.AWS_ACCESS_SECRET,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
