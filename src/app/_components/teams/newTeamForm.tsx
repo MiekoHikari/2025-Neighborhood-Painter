@@ -42,10 +42,10 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 interface NewTeamFormProps {
-	setDialogClosed: React.Dispatch<React.SetStateAction<boolean>>;
+	setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function NewTeamForm({ setDialogClosed }: NewTeamFormProps) {
+function NewTeamForm({ setDialogOpen }: NewTeamFormProps) {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitStatus, setSubmitStatus] = useState<string | null>(null);
@@ -93,8 +93,8 @@ function NewTeamForm({ setDialogClosed }: NewTeamFormProps) {
 					throw new Error("Failed to upload image to S3");
 				}
 
+				setDialogOpen(false);
 				form.reset();
-				setDialogClosed(true);
 			}
 		} catch (error) {
 			console.error("Error creating team:", error);

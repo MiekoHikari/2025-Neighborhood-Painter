@@ -6,16 +6,15 @@ import NewTeamForm from "~/app/_components/teams/newTeamForm";
 import { Button } from "~/app/_components/ui/button";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogTrigger,
 } from "~/app/_components/ui/dialog";
 
 function NewTeamButton() {
-	const [DialogClose, setDialogClosed] = React.useState(false);
+	const [DialogOpen, setDialogOpen] = React.useState(false);
 
 	return (
-		<Dialog open={DialogClose} onOpenChange={setDialogClosed}>
+		<Dialog open={DialogOpen} onOpenChange={setDialogOpen}>
 			<DialogTrigger asChild>
 				<div className="aspect-square">
 					<Button
@@ -34,7 +33,7 @@ function NewTeamButton() {
 						with others.
 					</div>
 				</DialogTitle>
-				<NewTeamForm setDialogClosed={setDialogClosed} />
+				<NewTeamForm setDialogOpen={setDialogOpen} />
 			</DialogContent>
 		</Dialog>
 	);
