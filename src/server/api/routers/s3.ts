@@ -5,6 +5,16 @@ import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "~/env";
 import type { S3Grants } from "@prisma/client";
 
+import { S3Client } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({
+	credentials: {
+		accessKeyId: env.AWS_ACCESS_KEY,
+		secretAccessKey: env.AWS_ACCESS_SECRET,
+	},
+	region: env.AWS_BUCKET_REGION,
+});
+
 const s3Router = createTRPCRouter({
 	create: protectedProcedure
 		.input(
@@ -19,7 +29,7 @@ const s3Router = createTRPCRouter({
 				Key: input.objectKey,
 			});
 
-			const url = await getSignedUrl(ctx.s3Client, command, {
+			const url = await getSignedUrl(s3, command, {
 				expiresIn: 3600,
 			});
 
@@ -53,7 +63,7 @@ const s3Router = createTRPCRouter({
 				Key: input.objectKey,
 			});
 
-			const url = await getSignedUrl(ctx.s3Client, command, {
+			const url = await getSignedUrl(s3, command, {
 				expiresIn: 3600,
 			});
 
@@ -63,13 +73,13 @@ const s3Router = createTRPCRouter({
 			}
 
 			const grant = {
-					team_id: slug,
-					key: input.objectKey,
-					url,
-					expired_at: new Date(Date.now() + 3600 * 1000),
-				}
+				team_id: slug,
+				key: input.objectKey,
+				url,
+				expired_at: new Date(Date.now() + 3600 * 1000),
+			};
 
-			let s3grant: S3Grants | null = null
+			let s3grant: S3Grants | null = null;
 
 			// Store the new presigned URL in the database
 			if (existingGrant) {
@@ -77,7 +87,7 @@ const s3Router = createTRPCRouter({
 					where: {
 						id: existingGrant.id,
 					},
-					data: grant
+					data: grant,
 				});
 			} else {
 				s3grant = await ctx.db.s3Grants.create({
@@ -111,7 +121,7 @@ const s3Router = createTRPCRouter({
 				Key: input.objectKey,
 			});
 
-			const url = await getSignedUrl(ctx.s3Client, command, {
+			const url = await getSignedUrl(s3, command, {
 				expiresIn: 3600,
 			});
 
