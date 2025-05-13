@@ -97,6 +97,56 @@ const s3Router = createTRPCRouter({
 
 			return s3grant;
 		}),
+	readMany: protectedProcedure
+		.input(
+			z.object({
+				slugs: z.string().array(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			// Fetch all presigned URLs for the given slugs
+			const grants = await ctx.db.s3Grants.findMany({
+				where: {
+					team_id: {
+						in: input.slugs,
+					},
+				},
+			});
+
+			// Re-validate the presigned URLs
+			const updatedGrants = await Promise.all(
+				grants.map(async (grant) => {
+					let validGrant = grant;
+
+					if (grant.expired_at && new Date(grant.expired_at) < new Date()) {
+						// If the URL is expired, generate a new one
+						const command = new GetObjectCommand({
+							Bucket: env.AWS_BUCKET_NAME,
+							Key: grant.key,
+						});
+
+						const url = await getSignedUrl(s3, command, {
+							expiresIn: 3600,
+						});
+
+						// Update the database with the new URL
+						validGrant = await ctx.db.s3Grants.update({
+							where: {
+								id: grant.id,
+							},
+							data: {
+								url,
+								expired_at: new Date(Date.now() + 3600 * 1000),
+							},
+						});
+					}
+
+					return validGrant;
+				}),
+			);
+
+			return updatedGrants;
+		}),
 	update: protectedProcedure
 		.input(
 			z.object({

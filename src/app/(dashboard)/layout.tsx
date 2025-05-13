@@ -7,6 +7,8 @@ import { TRPCReactProvider } from "~/trpc/react";
 import Sidebar from "./_components/sidebar";
 import TeamSidebar from "./_components/teamSidebar";
 import Navbar from "./_components/navbar";
+import { TeamProvider } from "../_lib/teamContext";
+import { S3Provider } from "../_lib/s3Context";
 
 export const metadata: Metadata = {
 	title: "Create T3 App",
@@ -23,17 +25,21 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<main className="h-[100vh]">
-			<Sidebar />
-			<div className="h-full pl-[60px]">
-				<div className="flex h-full gap-x-3">
-					<TeamSidebar />
-					<div className="h-full flex-1">
-						<Navbar />
-						{children}
+		<TeamProvider>
+			<S3Provider>
+				<main className="h-[100vh]">
+					<Sidebar />
+					<div className="h-full pl-[60px]">
+						<div className="flex h-full gap-x-3">
+							<TeamSidebar />
+							<div className="h-full flex-1">
+								<Navbar />
+								{children}
+							</div>
+						</div>
 					</div>
-				</div>
-			</div>
-		</main>
+				</main>
+			</S3Provider>
+		</TeamProvider>
 	);
 }
