@@ -14,7 +14,7 @@ import { ZodError } from "zod";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 
-import s3Client from '~/server/s3'
+import s3Client from "~/server/s3";
 
 /**
  * 1. CONTEXT
@@ -47,6 +47,15 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * errors on the backend.
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
+	sse: {
+		ping: {
+			enabled: true,
+			intervalMs: 2000,
+		},
+		client: {
+			reconnectAfterInactivityMs: 3000,
+		},
+	},
 	transformer: superjson,
 	errorFormatter({ shape, error }) {
 		return {
