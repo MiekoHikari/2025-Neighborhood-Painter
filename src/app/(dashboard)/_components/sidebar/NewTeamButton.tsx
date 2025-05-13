@@ -9,6 +9,7 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "~/app/_components/ui/dialog";
+import Hint from "~/app/_components/ui/hint";
 
 function NewTeamButton() {
 	const [DialogOpen, setDialogOpen] = React.useState(false);
@@ -17,12 +18,14 @@ function NewTeamButton() {
 		<Dialog open={DialogOpen} onOpenChange={setDialogOpen}>
 			<DialogTrigger asChild>
 				<div className="aspect-square">
-					<Button
-						variant="secondary"
-						className="h-full w-full rounded-full p-0"
-					>
-						<PlusIcon className="h-6 w-6 text-blue-500" />
-					</Button>
+					<Hint label="Create a new team" side="right" sideOffset={18}>
+						<Button
+							variant="secondary"
+							className="h-full w-full rounded-full p-0"
+						>
+							<PlusIcon className="h-6 w-6 text-blue-500" />
+						</Button>
+					</Hint>
 				</div>
 			</DialogTrigger>
 			<DialogContent>
