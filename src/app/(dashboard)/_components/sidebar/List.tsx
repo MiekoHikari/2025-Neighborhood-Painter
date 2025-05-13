@@ -1,15 +1,24 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { api } from "~/trpc/react";
 
 function ListTeams() {
-	const { data: teams, isLoading } = api.team.readAll.useQuery();
+	const { data: teams, isLoading, refetch } = api.team.readAll.useQuery();
+	const onTeamUpdate = api.team.onUpdate.useSubscription();
+
+	useEffect(() => {
+		if (onTeamUpdate.data) {
+			refetch();
+
+			onTeamUpdate.reset();
+		}
+	});
 
 	// If loading return many skeleton buttons
 	if (isLoading) {
 		return (
 			<div className="flex flex-col gap-2">
-				{Array.from({ length: 5 }).map((_, index) => (
+				{Array.from({ length: 10 }).map((_, index) => (
 					<div
 						// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 						key={index}

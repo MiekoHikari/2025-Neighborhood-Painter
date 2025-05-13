@@ -1,5 +1,11 @@
+import EventEmitter from "node:events";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
+import { observable } from "@trpc/server/observable";
+
+const teamEvents = new EventEmitter();
+
+type Team = typeof import("@prisma/client").Prisma.TeamScalarFieldEnum;
 
 export const teamRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -29,6 +35,8 @@ export const teamRouter = createTRPCRouter({
 					role: "owner",
 				},
 			});
+
+			teamEvents.emit("update", team);
 
 			return connection;
 		}),
@@ -70,7 +78,7 @@ export const teamRouter = createTRPCRouter({
 				throw new Error("Team not found");
 			}
 
-			await ctx.db.team.update({
+			const newTeam = await ctx.db.team.update({
 				where: {
 					id: team.id,
 				},
@@ -79,6 +87,8 @@ export const teamRouter = createTRPCRouter({
 					icon,
 				},
 			});
+
+			teamEvents.emit("update", newTeam);
 		}),
 	delete: protectedProcedure
 		.input(z.object({ slug: z.string() }))
@@ -100,6 +110,8 @@ export const teamRouter = createTRPCRouter({
 					id: team.id,
 				},
 			});
+
+			teamEvents.emit("update", team);
 		}),
 	readAll: protectedProcedure.query(async ({ ctx }) => {
 		const teams = await ctx.db.userTeam.findMany({
@@ -115,5 +127,14 @@ export const teamRouter = createTRPCRouter({
 			...team.team,
 			role: team.role,
 		}));
+	}),
+	onUpdate: protectedProcedure.subscription(() => {
+		return observable<Team>((emit) => {
+			teamEvents.on("update", emit.next);
+
+			return () => {
+				teamEvents.off("update", emit.next);
+			};
+		});
 	}),
 });
