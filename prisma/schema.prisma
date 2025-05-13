@@ -30,13 +30,13 @@ model Team {
 
 model S3Grants {
     id          String   @id @default(cuid())
-    key         String   @db.VarChar(255) @unique
+    key         String   @db.VarChar(255)
     team_id     String
-    url         String   @db.VarChar(255)
+    url         String  @unique
     created_at DateTime @default(now())
     expired_at DateTime?
 
-    team       Team    @relation(fields: [team_id], references: [id], onDelete: Cascade)
+    team       Team    @relation(fields: [team_id], references: [uniqueId], onDelete: Cascade)
 
     @@unique([key, team_id])
 }
@@ -48,7 +48,7 @@ model UserTeam {
     role        String   @db.VarChar(255)
 
     user        User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    team        Team    @relation(fields: [team_id], references: [id], onDelete: Cascade)
+    team        Team    @relation(fields: [team_id], references: [uniqueId], onDelete: Cascade)
 
     @@unique([user_id, team_id])
 }

@@ -23,7 +23,7 @@ const s3Router = createTRPCRouter({
 				expiresIn: 3600,
 			});
 
-			ctx.db.s3Grants.create({
+			const grant = await ctx.db.s3Grants.create({
 				data: {
 					team_id: input.slug,
 					key: input.objectKey,
@@ -32,7 +32,7 @@ const s3Router = createTRPCRouter({
 				},
 			});
 
-			return url;
+			return grant;
 		}),
 	read: protectedProcedure
 		.input(
@@ -52,7 +52,7 @@ const s3Router = createTRPCRouter({
 			});
 
 			if (existingGrant) {
-				return existingGrant.url;
+				return existingGrant;
 			}
 
 			// If not, generate a new presigned URL
@@ -71,7 +71,7 @@ const s3Router = createTRPCRouter({
 			}
 
 			// Store the new presigned URL in the database
-			await ctx.db.s3Grants.create({
+			const grant = await ctx.db.s3Grants.create({
 				data: {
 					team_id: slug,
 					key: input.objectKey,
@@ -80,7 +80,7 @@ const s3Router = createTRPCRouter({
 				},
 			});
 
-			return url;
+			return grant;
 		}),
 	update: protectedProcedure
 		.input(
@@ -105,12 +105,13 @@ const s3Router = createTRPCRouter({
 				Bucket: env.AWS_BUCKET_NAME,
 				Key: input.objectKey,
 			});
+
 			const url = await getSignedUrl(ctx.s3Client, command, {
 				expiresIn: 3600,
 			});
 
 			// Store the new presigned URL in the database
-			await ctx.db.s3Grants.create({
+			const grant = await ctx.db.s3Grants.create({
 				data: {
 					team_id: input.slug,
 					key: input.objectKey,
@@ -119,7 +120,7 @@ const s3Router = createTRPCRouter({
 				},
 			});
 
-			return url;
+			return grant;
 		}),
 	delete: protectedProcedure
 		.input(

@@ -19,12 +19,8 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { api } from "~/trpc/react";
 
-// TODO: Add slug to schema
-// TODO: Implement feature to handle creating new Teams
 // TODO: Implement feature to joining teams
-// TODO: Fix Issue with image upload being so tiny
 // TODO: Validate image files properly
-// Pass in Dialog props to form
 // File Size Limit 10MB
 
 const formSchema = z.object({
@@ -68,8 +64,6 @@ function NewTeamForm({ setDialogClosed }: NewTeamFormProps) {
 	async function onSubmit(data: FormData) {
 		try {
 			setIsSubmitting(true);
-			setSubmitStatus("Uploading...");
-
 			if (data.image) {
 				setSubmitStatus("Creating Team...");
 				const iconObjectKey = `${data.slug}/icon.${data.image?.name.split(".").pop()}`;
@@ -82,12 +76,12 @@ function NewTeamForm({ setDialogClosed }: NewTeamFormProps) {
 
 				setSubmitStatus("Uploading Icon...");
 
-				const presignedUrl = await preSigner.mutateAsync({
+				const s3grant = await preSigner.mutateAsync({
 					slug: data.slug,
 					objectKey: iconObjectKey,
 				});
 
-				const uploadResponse = await fetch(presignedUrl, {
+				const uploadResponse = await fetch(s3grant.url, {
 					method: "PUT",
 					headers: {
 						"Content-Type": data.image.type,

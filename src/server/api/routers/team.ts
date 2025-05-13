@@ -13,7 +13,7 @@ export const teamRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const { name, slug, icon } = input;
 
-			ctx.db.team.create({
+			const team = await ctx.db.team.create({
 				data: {
 					name,
 					uniqueId: slug,
@@ -22,13 +22,15 @@ export const teamRouter = createTRPCRouter({
 				},
 			});
 
-			ctx.db.userTeam.create({
+			const connection = await ctx.db.userTeam.create({
 				data: {
 					user_id: ctx.session.user.id,
-					team_id: slug,
+					team_id: team.uniqueId,
 					role: "owner",
 				},
 			});
+
+			return connection;
 		}),
 	read: protectedProcedure
 		.input(z.object({ slug: z.string() }))
@@ -99,4 +101,19 @@ export const teamRouter = createTRPCRouter({
 				},
 			});
 		}),
+	readAll: protectedProcedure.query(async ({ ctx }) => {
+		const teams = await ctx.db.userTeam.findMany({
+			where: {
+				user_id: ctx.session.user.id,
+			},
+			include: {
+				team: true,
+			},
+		});
+
+		return teams.map((team) => ({
+			...team.team,
+			role: team.role,
+		}));
+	}),
 });
