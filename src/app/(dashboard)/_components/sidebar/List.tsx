@@ -2,18 +2,10 @@
 import React, { useEffect } from "react";
 import { api } from "~/trpc/react";
 import SidebarItem from "./item";
+import { useTeams } from "~/app/_lib/teamContext";
 
 function ListTeams() {
-	const { data: teams, isLoading, refetch } = api.team.readAll.useQuery();
-	const onTeamUpdate = api.team.onUpdate.useSubscription();
-
-	useEffect(() => {
-		if (onTeamUpdate.data) {
-			refetch();
-
-			onTeamUpdate.reset();
-		}
-	});
+	const { teams, isLoading } = useTeams();
 
 	// If loading return many skeleton buttons
 	if (isLoading) {
