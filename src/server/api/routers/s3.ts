@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "~/env";
+import type { S3Grants } from "@prisma/client";
 
 const s3Router = createTRPCRouter({
 	create: protectedProcedure
@@ -35,13 +36,14 @@ const s3Router = createTRPCRouter({
 			const existingGrant = await ctx.db.s3Grants.findFirst({
 				where: {
 					key: input.objectKey,
-					expired_at: {
-						gte: new Date(),
-					},
 				},
 			});
 
-			if (existingGrant) {
+			const expired = existingGrant?.expired_at
+				? new Date(existingGrant.expired_at) < new Date()
+				: false;
+
+			if (existingGrant && !expired) {
 				return existingGrant;
 			}
 
@@ -60,17 +62,30 @@ const s3Router = createTRPCRouter({
 				throw new Error("Invalid object key");
 			}
 
-			// Store the new presigned URL in the database
-			const grant = await ctx.db.s3Grants.create({
-				data: {
+			const grant = {
 					team_id: slug,
 					key: input.objectKey,
 					url,
 					expired_at: new Date(Date.now() + 3600 * 1000),
-				},
-			});
+				}
 
-			return grant;
+			let s3grant: S3Grants | null = null
+
+			// Store the new presigned URL in the database
+			if (existingGrant) {
+				s3grant = await ctx.db.s3Grants.update({
+					where: {
+						id: existingGrant.id,
+					},
+					data: grant
+				});
+			} else {
+				s3grant = await ctx.db.s3Grants.create({
+					data: grant,
+				});
+			}
+
+			return s3grant;
 		}),
 	update: protectedProcedure
 		.input(

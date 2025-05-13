@@ -41,7 +41,6 @@ function SidebarItem({ team }: SidebarItemProps) {
 	return (
 		<Hint label={team?.name ?? "Team"} side="right" sideOffset={18}>
 			<div className="relative aspect-square">
-				<a href={`/${team?.uniqueId}`} className="flex h-full w-full">
 					<Avatar
 						className={cn(
 							"cursor-pointer rounded-md opacity-75 transition hover:opacity-100",
@@ -63,7 +62,6 @@ function SidebarItem({ team }: SidebarItemProps) {
 								.join("") ?? "T"}
 						</AvatarFallback>
 					</Avatar>
-				</a>
 			</div>
 		</Hint>
 	);
