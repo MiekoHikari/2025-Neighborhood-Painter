@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Image from "next/image";
 import { cn } from "~/app/_lib/utils";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import type { S3Grants, Team } from "@prisma/client";
 import {
@@ -21,6 +21,7 @@ interface SidebarItemProps {
 function SidebarItem({ team }: SidebarItemProps) {
 	const { teamSlug: currentTeamSlug } = useParams();
 	const [teamIcon, setTeamIcon] = React.useState<S3Grants | null>(null);
+	const router = useRouter();
 
 	const isActive = team?.uniqueId === currentTeamSlug;
 	const teamIconGrant = team.icon
@@ -33,7 +34,9 @@ function SidebarItem({ team }: SidebarItemProps) {
 		}
 	});
 
-	const teamOnClick = () => {};
+	const teamOnClick = () => {
+		router.push(`/${team?.uniqueId}`);
+	};
 
 	return (
 		<Hint label={team?.name ?? "Team"} side="right" sideOffset={18}>
