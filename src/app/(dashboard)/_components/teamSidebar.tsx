@@ -22,7 +22,7 @@ function TeamSidebar() {
 			>
 				<FaSnowman width={40} height={40} className="text-2xl text-slate-900 dark:text-slate-50" />
 				<span className={cn("font-semibold text-2xl", font.className)}>NordBoard</span>
-				</Link>
+			</Link>
 		</div>
 	);
 }
