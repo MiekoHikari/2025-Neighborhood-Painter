@@ -1,32 +1,63 @@
 "use client";
 import type React from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
-import type { S3Grants, Team } from "@prisma/client";
-import { Avatar, AvatarImage } from "../ui/avatar";
-import { api } from "~/trpc/react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useTeams } from "~/app/_lib/teamContext";
+import { useS3 } from "~/app/_lib/s3Context";
+import { useParams, useRouter } from "next/navigation";
 
-interface teamSwitchProps extends React.PropsWithChildren {
-	teams: Team[];
-}
+function TeamSwitchDropdown({ children, ...props }: React.PropsWithChildren) {
+	const params = useParams();
+	const router = useRouter();
 
-function TeamSwitchDropdown({ children, teams, ...props }: teamSwitchProps) {
-	const teamIconQuery = api;
-	const getTeamIcon = (teamId: string) => {
-		// TODO: Implement logic to get team icon
+	const teamSlug = params?.teamSlug as string;
+
+	const { teams } = useTeams();
+	const { icons } = useS3();
+
+	if (!teams) {
+		return null;
+	}
+
+	const teamsContent = teams.map((team) => (
+		<SelectItem key={team.id} value={team.uniqueId}>
+			<Avatar>
+				{team.icon ? (
+					<AvatarImage
+						src={icons?.find((t) => t.key === team.icon)?.url ?? undefined}
+					/>
+				) : (
+					<AvatarFallback>
+						{team.name
+							.split(" ")
+							.map((word) => word[0])
+							.join("")
+							.toUpperCase()}
+					</AvatarFallback>
+				)}
+			</Avatar>
+			{team.name}
+		</SelectItem>
+	));
+
+	const onChange = (value: string) => {
+		if (value !== teamSlug) {
+			router.push(`/${value}`);
+		}
 	};
+
 	return (
-		<Select {...props}>
-			<SelectTrigger>{children}</SelectTrigger>
-			<SelectContent>
-				{teams.map((team) => (
-					<SelectItem key={team.id} value={team.uniqueId}>
-						<Avatar>
-							<AvatarImage />
-						</Avatar>
-						{team.name}
-					</SelectItem>
-				))}
-			</SelectContent>
+		<Select {...props} value={teamSlug ?? undefined} onValueChange={onChange}>
+			<SelectTrigger>
+				<SelectValue placeholder="Select a team" />
+			</SelectTrigger>
+			<SelectContent>{teamsContent}</SelectContent>
 		</Select>
 	);
 }
