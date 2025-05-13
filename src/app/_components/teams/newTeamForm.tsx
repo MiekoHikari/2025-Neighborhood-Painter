@@ -77,11 +77,10 @@ function NewTeamForm({ setDialogOpen }: NewTeamFormProps) {
 				setSubmitStatus("Uploading Icon...");
 
 				const s3grant = await preSigner.mutateAsync({
-					slug: data.slug,
 					objectKey: iconObjectKey,
 				});
 
-				const uploadResponse = await fetch(s3grant.url, {
+				const uploadResponse = await fetch(s3grant, {
 					method: "PUT",
 					headers: {
 						"Content-Type": data.image.type,

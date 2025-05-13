@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { api } from "~/trpc/react";
+import SidebarItem from "./item";
 
 function ListTeams() {
 	const { data: teams, isLoading, refetch } = api.team.readAll.useQuery();
@@ -37,7 +38,7 @@ function ListTeams() {
 		<div>
 			<ul className="space-y-4">
 				{teams.map((team) => (
-					<p key={team.id}>{team.name}</p>
+					<SidebarItem key={team.uniqueId} team={team} />
 				))}
 			</ul>
 		</div>

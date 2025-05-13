@@ -2,10 +2,9 @@ import EventEmitter from "node:events";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { observable } from "@trpc/server/observable";
+import type { Team } from "@prisma/client";
 
 const teamEvents = new EventEmitter();
-
-type Team = typeof import("@prisma/client").Prisma.TeamScalarFieldEnum;
 
 export const teamRouter = createTRPCRouter({
 	create: protectedProcedure

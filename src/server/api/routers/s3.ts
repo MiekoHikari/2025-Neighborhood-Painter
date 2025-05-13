@@ -8,7 +8,6 @@ const s3Router = createTRPCRouter({
 	create: protectedProcedure
 		.input(
 			z.object({
-				slug: z.string(),
 				objectKey: z.string(),
 			}),
 		)
@@ -23,16 +22,7 @@ const s3Router = createTRPCRouter({
 				expiresIn: 3600,
 			});
 
-			const grant = await ctx.db.s3Grants.create({
-				data: {
-					team_id: input.slug,
-					key: input.objectKey,
-					url,
-					expired_at: new Date(Date.now() + 3600 * 1000),
-				},
-			});
-
-			return grant;
+			return url;
 		}),
 	read: protectedProcedure
 		.input(
