@@ -24,13 +24,21 @@ import { api } from "~/trpc/react";
 // File Size Limit 10MB
 
 const formSchema = z.object({
-	name: z.string().min(2, {
-		message: "Team name must be at least 2 characters.",
-	}),
+	name: z
+		.string()
+		.min(2, {
+			message: "Team name must be at least 2 characters.",
+		})
+		.max(16, {
+			message: "Team name cannot exceed 16 characters.",
+		}),
 	slug: z
 		.string()
 		.min(2, {
 			message: "Team slug must be at least 2 characters.",
+		})
+		.max(16, {
+			message: "Team slug cannot exceed 16 characters.",
 		})
 		.regex(/^[a-z0-9-]+$/, {
 			message:

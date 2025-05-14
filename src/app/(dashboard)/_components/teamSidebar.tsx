@@ -2,7 +2,6 @@
 import React from "react";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Poppins } from "next/font/google";
 import { cn } from "~/app/_lib/utils";
 import { FaSnowman } from "react-icons/fa";
@@ -27,7 +26,9 @@ function TeamSidebar() {
 					NordBoard
 				</span>
 			</Link>
-			<TeamSwitchDropdown />
+			<div className="flex w-[90%] flex-col space-x-2">
+				<TeamSwitchDropdown />
+			</div>
 		</div>
 	);
 }
