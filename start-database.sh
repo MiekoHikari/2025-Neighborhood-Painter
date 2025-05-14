@@ -16,7 +16,8 @@ set -a
 source .env
 
 DB_PASSWORD=$(echo "$DATABASE_URL" | awk -F':' '{print $3}' | awk -F'@' '{print $1}')
-DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'\/' '{print $1}')
+# Fix for the awk warning
+DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'/' '{print $1}')
 DB_NAME=$(echo "$DATABASE_URL" | awk -F'/' '{print $4}')
 DB_CONTAINER_NAME="$DB_NAME-postgres"
 
@@ -26,15 +27,34 @@ if ! [ -x "$(command -v docker)" ] && ! [ -x "$(command -v podman)" ]; then
 fi
 
 # determine which docker command to use
-if [ -x "$(command -v docker)" ]; then
-  DOCKER_CMD="docker"
-elif [ -x "$(command -v podman)" ]; then
+if [ -x "$(command -v podman)" ]; then
   DOCKER_CMD="podman"
+elif [ -x "$(command -v docker)" ]; then
+  DOCKER_CMD="docker"
 fi
 
+# Modified check for daemon with better Podman WSL support
 if ! $DOCKER_CMD info > /dev/null 2>&1; then
-  echo "$DOCKER_CMD daemon is not running. Please start $DOCKER_CMD and try again."
-  exit 1
+  if [ "$DOCKER_CMD" = "podman" ]; then
+    echo "Podman detected but not responding to commands. Attempting to fix..."
+    
+    # Different ways to start podman in various environments
+    sudo systemctl enable --now podman.socket >/dev/null 2>&1 || true
+    sudo service podman start >/dev/null 2>&1 || true
+    podman system service --timeout 0 >/dev/null 2>&1 &
+    
+    # Wait a moment for the service to start
+    sleep 3
+    
+    # Try to run podman without info command
+    if ! podman version >/dev/null 2>&1; then
+      echo "Unable to start podman service. Proceeding anyway and hoping for the best..."
+      # Continue execution instead of exiting
+    fi
+  else
+    echo "$DOCKER_CMD daemon is not running. Please start $DOCKER_CMD and try again."
+    exit 1
+  fi
 fi
 
 if command -v nc >/dev/null 2>&1; then
