@@ -4,7 +4,7 @@ import { z } from "zod";
 import { observable } from "@trpc/server/observable";
 import type { Team } from "@prisma/client";
 
-const teamEvents = new EventEmitter();
+export const teamEvents = new EventEmitter();
 
 export const teamRouter = createTRPCRouter({
 	create: protectedProcedure
