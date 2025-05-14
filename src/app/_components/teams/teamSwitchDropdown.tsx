@@ -14,12 +14,11 @@ import {
 import { Button } from "../ui/button";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ChevronsUpDown, Plus, PlusIcon, Settings } from "lucide-react";
+import { ChevronsUpDown, Plus, Settings } from "lucide-react";
 import { CardTitle } from "../ui/card";
 import { useSession } from "next-auth/react";
 import { Badge } from "../ui/badge";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog";
-import Hint from "../ui/hint";
 import NewTeamForm from "./newTeamForm";
 
 function TeamSwitchDropdown() {
