@@ -1,69 +1,3 @@
-// "use client";
-// import type React from "react";
-// import {
-// 	Select,
-// 	SelectContent,
-// 	SelectItem,
-// 	SelectTrigger,
-// 	SelectValue,
-// } from "../ui/select";
-// import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-// import { useTeams } from "~/app/_lib/teamContext";
-// import { useS3 } from "~/app/_lib/s3Context";
-// import { useParams, useRouter } from "next/navigation";
-
-// function TeamSwitchDropdown({ children, ...props }: React.PropsWithChildren) {
-// 	const params = useParams();
-// 	const router = useRouter();
-
-// 	const teamSlug = params?.teamSlug as string;
-
-// 	const { teams } = useTeams();
-// 	const { icons } = useS3();
-
-// 	if (!teams) {
-// 		return null;
-// 	}
-
-// 	const teamsContent = teams.map((team) => (
-// 		<SelectItem key={team.id} value={team.uniqueId}>
-// 			<Avatar>
-// 				{team.icon ? (
-// 					<AvatarImage
-// 						src={icons?.find((t) => t.key === team.icon)?.url ?? undefined}
-// 					/>
-// 				) : (
-// 					<AvatarFallback>
-// 						{team.name
-// 							.split(" ")
-// 							.map((word) => word[0])
-// 							.join("")
-// 							.toUpperCase()}
-// 					</AvatarFallback>
-// 				)}
-// 			</Avatar>
-// 			{team.name}
-// 		</SelectItem>
-// 	));
-
-// 	const onChange = (value: string) => {
-// 		if (value !== teamSlug) {
-// 			router.push(`/${value}`);
-// 		}
-// 	};
-
-// 	return (
-// 		<Select {...props} value={teamSlug ?? undefined} onValueChange={onChange}>
-// 			<SelectTrigger className="w-full">
-// 				<SelectValue placeholder="Select a team" />
-// 			</SelectTrigger>
-// 			<SelectContent className="w-full">{teamsContent}</SelectContent>
-// 		</Select>
-// 	);
-// }
-
-// export default TeamSwitchDropdown;
-
 "use client";
 import React from "react";
 import { useS3 } from "~/app/_lib/s3Context";
@@ -71,31 +5,41 @@ import { useTeams } from "~/app/_lib/teamContext";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuLabel,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ChevronsUpDown, Plus, Settings } from "lucide-react";
-import { Card, CardHeader, CardTitle } from "../ui/card";
-import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
+import { ChevronsUpDown, Plus, PlusIcon, Settings } from "lucide-react";
+import { CardTitle } from "../ui/card";
 import { useSession } from "next-auth/react";
 import { Badge } from "../ui/badge";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog";
+import Hint from "../ui/hint";
+import NewTeamForm from "./newTeamForm";
 
 function TeamSwitchDropdown() {
+	const router = useRouter();
 	const { teams } = useTeams();
 	const { icons } = useS3();
 	const session = useSession();
+	const [DialogOpen, setDialogOpen] = React.useState(false);
 
 	const params = useParams();
 	const teamSlug = params?.teamSlug as string;
 	const currentTeam = teams?.find((team) => team.uniqueId === teamSlug);
 	const currentTeamIcon = icons?.find((t) => t.key === currentTeam?.icon)?.url;
 
-	const onTeamSelect = (value: string) => {};
+	const onTeamSelect = (value: string) => {
+		const selectedTeam = teams?.find((team) => team.uniqueId === value);
+		if (selectedTeam) {
+			router.push(`/${selectedTeam.uniqueId}`);
+		}
+	};
 
 	return (
 		<DropdownMenu>
@@ -167,15 +111,42 @@ function TeamSwitchDropdown() {
 				>
 					{teams?.map((team) => (
 						<DropdownMenuRadioItem key={team.uniqueId} value={team.uniqueId}>
+							<Avatar>
+								{team.icon ? (
+									<AvatarImage src={icons?.find((t) => t.key === team.icon)?.url} />
+								) : (
+									<AvatarFallback className="flex items-center justify-center bg-primary font-bold text-primary-foreground">
+										{team.name
+											.split(" ")
+											.map((word) => word[0])
+											.join("")
+											.toUpperCase()}
+									</AvatarFallback>
+								)}
+							</Avatar>
 							{team.name}
 						</DropdownMenuRadioItem>
 					))}
 				</DropdownMenuRadioGroup>
 				<DropdownMenuSeparator />
-				<Button className="w-full" variant="outline">
-					<Plus className="mr-2 h-4 w-4" />
-					Create a new team
-				</Button>
+				<Dialog open={DialogOpen} onOpenChange={setDialogOpen}>
+					<DialogTrigger asChild>
+						<Button className="w-full" variant="outline">
+							<Plus className="mr-2 h-4 w-4" />
+							Create a new team
+						</Button>
+					</DialogTrigger>
+					<DialogContent>
+						<DialogTitle className="text-center font-semibold text-lg">
+							Let's create a new team!
+							<div className="text-muted-foreground text-sm">
+								You can create a new team to manage your projects and collaborate
+								with others.
+							</div>
+						</DialogTitle>
+						<NewTeamForm setDialogOpen={setDialogOpen} />
+					</DialogContent>
+				</Dialog>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
