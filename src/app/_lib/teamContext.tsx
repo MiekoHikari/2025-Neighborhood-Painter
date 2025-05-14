@@ -32,11 +32,11 @@ export function TeamProvider({ children }: React.PropsWithChildren) {
 }
 
 export function useTeams() {
-    const context = useContext(TeamContext);
+	const context = useContext(TeamContext);
 
-    if (!context) {
-        throw new Error("useTeams must be used within a TeamProvider");
-    }
+	if (!context) {
+		throw new Error("useTeams must be used within a TeamProvider");
+	}
 
-    return context;
+	return context;
 }

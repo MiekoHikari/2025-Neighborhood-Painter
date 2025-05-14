@@ -6,6 +6,7 @@ import { env } from "~/env";
 import type { S3Grants } from "@prisma/client";
 
 import { S3Client } from "@aws-sdk/client-s3";
+import { teamEvents } from "./team";
 
 const s3 = new S3Client({
 	credentials: {
@@ -145,7 +146,50 @@ const s3Router = createTRPCRouter({
 				}),
 			);
 
-			return updatedGrants;
+			const slugsNotFound = input.slugs.filter(
+				(slug) => !updatedGrants.some((grant) => grant.team_id === slug),
+			);
+
+			const newGrats = await Promise.all(
+				slugsNotFound.map(async (slug) => {
+					const team = await ctx.db.team.findFirst({
+						where: {
+							uniqueId: slug,
+						},
+					});
+
+					if (!team || !team?.icon) {
+						return null;
+					}
+
+					const command = new GetObjectCommand({
+						Bucket: env.AWS_BUCKET_NAME,
+						Key: team.icon,
+					});
+
+					const url = await getSignedUrl(s3, command, {
+						expiresIn: 3600,
+					});
+
+					const newGrant = await ctx.db.s3Grants.create({
+						data: {
+							team_id: slug,
+							key: team.icon,
+							url,
+							expired_at: new Date(Date.now() + 3600 * 1000),
+						},
+					});
+
+					return newGrant;
+				}),
+			);
+
+			// Merge the new grants with the existing ones
+			const mergedGrants = updatedGrants.concat(
+				newGrats.filter((grant) => grant !== null) as S3Grants[],
+			);
+
+			return mergedGrants;
 		}),
 	update: protectedProcedure
 		.input(
@@ -204,6 +248,16 @@ const s3Router = createTRPCRouter({
 			});
 
 			return true;
+		}),
+	uploadComplete: protectedProcedure
+		.input(
+			z.object({
+				slug: z.string(),
+				objectKey: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			teamEvents.emit("update", null);
 		}),
 });
 
