@@ -1,11 +1,10 @@
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { env } from "~/env";
 import type { S3Grants } from "@prisma/client";
 
-import { S3Client } from "@aws-sdk/client-s3";
 import { teamEvents } from "./team";
 
 const s3 = new S3Client({
@@ -158,7 +157,7 @@ const s3Router = createTRPCRouter({
 						},
 					});
 
-					if (!team || !team?.icon) {
+					if (!team?.icon) {
 						return null;
 					}
 
@@ -186,7 +185,7 @@ const s3Router = createTRPCRouter({
 
 			// Merge the new grants with the existing ones
 			const mergedGrants = updatedGrants.concat(
-				newGrats.filter((grant) => grant !== null) as S3Grants[],
+				newGrats.filter((grant) => grant !== null),
 			);
 
 			return mergedGrants;

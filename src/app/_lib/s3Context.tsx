@@ -10,15 +10,15 @@ import { api } from "~/trpc/react";
 // ! TODO: We should probably refactor this to only fetch the S3 grant for the resource we are trying to access
 // ! TODO: Expiration Handling is also not ideal, as it will not refetch the S3 grant if it is expired
 
-interface s3ContextValue {
+interface S3ContextValue {
 	icons: S3Grants[] | undefined;
 	isLoading: boolean;
 	refetch: () => void;
 }
 
-const s3Context = createContext<s3ContextValue | null>(null);
+const s3Context = createContext<S3ContextValue | null>(null);
 
-export function S3Provider({ children }: React.PropsWithChildren) {
+export function S3Provider({ children }: Readonly<React.PropsWithChildren>) {
 	const [slugs, setSlugs] = useState<string[]>([]);
 
 	const { data: teams, refetch: teamRefetch } = api.team.readAll.useQuery();
