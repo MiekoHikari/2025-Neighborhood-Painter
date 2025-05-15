@@ -53,7 +53,7 @@ interface NewTeamFormProps {
 	setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function NewTeamForm({ setDialogOpen }: NewTeamFormProps) {
+function NewTeamForm({ setDialogOpen }: Readonly<NewTeamFormProps>) {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitStatus, setSubmitStatus] = useState<string | null>(null);
@@ -134,9 +134,9 @@ function NewTeamForm({ setDialogOpen }: NewTeamFormProps) {
 			if (name === "name") {
 				const newSlug = value.name
 					? value.name
-							.toLowerCase()
-							.replace(/\s+/g, "-")
-							.replace(/[^a-z0-9-]/g, "")
+						.toLowerCase()
+						.replace(/\s+/g, "-")
+						.replace(/[^a-z0-9-]/g, "")
 					: "";
 				form.setValue("slug", newSlug, { shouldValidate: true });
 			}

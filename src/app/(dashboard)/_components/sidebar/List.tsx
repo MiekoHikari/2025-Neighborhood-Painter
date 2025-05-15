@@ -1,6 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
-import { api } from "~/trpc/react";
+import React from "react";
 import SidebarItem from "./item";
 import { useTeams } from "~/app/_lib/teamContext";
 
@@ -13,8 +12,7 @@ function ListTeams() {
 			<div className="flex flex-col gap-2">
 				{Array.from({ length: 10 }).map((_, index) => (
 					<div
-						// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-						key={index}
+						key={`skeleton-item-${crypto.randomUUID()}`}
 						className="h-10 w-full animate-pulse rounded-md bg-gray-200"
 					/>
 				))}

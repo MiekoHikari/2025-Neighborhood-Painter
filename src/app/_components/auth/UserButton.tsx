@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { DropdownMenu, DropdownMenuContent } from "../ui/dropdown-menu";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { Avatar, AvatarImage } from "../ui/avatar";
@@ -14,7 +14,7 @@ interface UserButtonProps {
 	session: Session | null;
 }
 
-function UserButton({ session }: UserButtonProps) {
+function UserButton({ session }: Readonly<UserButtonProps>) {
 	if (!session) {
 		return <SignInButton />;
 	}

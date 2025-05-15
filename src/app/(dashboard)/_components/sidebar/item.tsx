@@ -17,7 +17,7 @@ interface SidebarItemProps {
 	team: Team;
 }
 
-function SidebarItem({ team }: SidebarItemProps) {
+function SidebarItem({ team }: Readonly<SidebarItemProps>) {
 	const { teamSlug: currentTeamSlug } = useParams();
 	const [teamIcon, setTeamIcon] = React.useState<S3Grants | null>(null);
 	const router = useRouter();

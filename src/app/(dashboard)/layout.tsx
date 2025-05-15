@@ -3,7 +3,6 @@ import "~/styles/globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
-import { TRPCReactProvider } from "~/trpc/react";
 import Sidebar from "./_components/sidebar";
 import TeamSidebar from "./_components/teamSidebar";
 import Navbar from "./_components/navbar";
