@@ -59,8 +59,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 					true: [
 						retryLink({
 							retry: (opts) => {
-								opts.op.type;
-								//       ^? will always be 'subscription' since we're in a splitLink
+								// opts.op.type will always be 'subscription' since we're in a splitLink
 								const code = opts.error.data?.code;
 								if (!code) {
 									// This shouldn't happen as our httpSubscriptionLink will automatically retry within when there's a non-parsable response
