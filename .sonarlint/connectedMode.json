@@ -1,4 +1,5 @@
 {
-    "sonarQubeUri": "http://localhost:9000",
-    "projectKey": "Neighborhood-Painter"
+    "sonarCloudOrganization": "miekohikari",
+    "projectKey": "MiekoHikari_2025-Neighborhood-Painter",
+    "region": "EU"
 }
