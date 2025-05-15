@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import type { S3Grants } from "@prisma/client";
 import { api } from "~/trpc/react";
@@ -52,10 +52,13 @@ export function S3Provider({ children }: React.PropsWithChildren) {
 		}
 	}, [slugs, refetch]);
 
+	const contextValue = useMemo(
+		() => ({ icons: s3Grants, isLoading: isLoadingS3, refetch }),
+		[s3Grants, isLoadingS3, refetch]
+	);
+
 	return (
-		<s3Context.Provider
-			value={{ icons: s3Grants, isLoading: isLoadingS3, refetch }}
-		>
+		<s3Context.Provider value={contextValue}>
 			{children}
 		</s3Context.Provider>
 	);
