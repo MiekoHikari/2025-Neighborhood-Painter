@@ -1,18 +1,19 @@
+"use client";
 import React, { createContext, useEffect, useRef, useMemo, useContext } from 'react'
 import { api } from '~/trpc/react'
 
 interface S3GrantContextValue {
-    grants: {
+    grants?: {
         id: string;
         key: string;
         team_id: string;
         url: string;
         created_at: Date;
         expired_at: Date;
-    }[] | undefined;
+    }[];
 }
 
-const S3GrantContext = createContext<S3GrantContextValue | null>(null);
+const S3GrantContext = createContext<S3GrantContextValue>({});
 
 function S3GrantsProvider({ children }: Readonly<React.PropsWithChildren>) {
     const timerRef = useRef<NodeJS.Timeout | null>(null);

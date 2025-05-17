@@ -11,7 +11,7 @@ import {
 	AvatarFallback,
 } from "~/app/_components/ui/avatar";
 import Hint from "~/app/_components/ui/hint";
-import { useS3 } from "~/app/_lib/s3Context";
+import { useS3Grants } from "~/app/_lib/s3GrantsProvider";
 
 interface SidebarItemProps {
 	team: Team;
@@ -23,14 +23,14 @@ function SidebarItem({ team }: Readonly<SidebarItemProps>) {
 	const router = useRouter();
 
 	const isActive = team?.uniqueId === currentTeamSlug;
-	const { icons, isLoading } = useS3();
-	const teamIconGrant = icons?.find((t) => t.key === team.icon);
+	const { grants } = useS3Grants();
+	const teamIconGrant = grants?.find((t) => t.key === team.icon);
 
 	useEffect(() => {
-		if (teamIconGrant && !isLoading) {
+		if (teamIconGrant) {
 			setTeamIcon(teamIconGrant);
 		}
-	});
+	}, [teamIconGrant]);
 
 	const teamOnClick = () => {
 		router.push(`/${team?.uniqueId}`);

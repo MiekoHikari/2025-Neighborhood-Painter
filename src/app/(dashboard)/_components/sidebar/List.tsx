@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
 import SidebarItem from "./item";
-import { useTeams } from "~/app/_lib/teamContext";
+import { api } from "~/trpc/react";
 
 function ListTeams() {
-	const { teams, isLoading } = useTeams();
+	const { data: teams, isLoading } = api.team.readAll.useQuery();
 
 	// If loading return many skeleton buttons
 	if (isLoading) {

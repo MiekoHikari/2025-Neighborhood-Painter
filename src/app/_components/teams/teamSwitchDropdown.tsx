@@ -1,7 +1,5 @@
 "use client";
 import React from "react";
-import { useS3 } from "~/app/_lib/s3Context";
-import { useTeams } from "~/app/_lib/teamContext";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -20,18 +18,20 @@ import { useSession } from "next-auth/react";
 import { Badge } from "../ui/badge";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog";
 import NewTeamForm from "./newTeamForm";
+import { api } from "~/trpc/react";
+import { useS3Grants } from "~/app/_lib/s3GrantsProvider";
 
 function TeamSwitchDropdown() {
 	const router = useRouter();
-	const { teams } = useTeams();
-	const { icons } = useS3();
+	const { data: teams } = api.team.readAll.useQuery();
+	const { grants } = useS3Grants();
 	const session = useSession();
 	const [DialogOpen, setDialogOpen] = React.useState(false);
 
 	const params = useParams();
 	const teamSlug = params?.teamSlug as string;
 	const currentTeam = teams?.find((team) => team.uniqueId === teamSlug);
-	const currentTeamIcon = icons?.find((t) => t.key === currentTeam?.icon)?.url;
+	const currentTeamIcon = grants?.find((t) => t.key === currentTeam?.icon)?.url;
 
 	const onTeamSelect = (value: string) => {
 		const selectedTeam = teams?.find((team) => team.uniqueId === value);
@@ -112,7 +112,7 @@ function TeamSwitchDropdown() {
 						<DropdownMenuRadioItem key={team.uniqueId} value={team.uniqueId}>
 							<Avatar>
 								{team.icon ? (
-									<AvatarImage src={icons?.find((t) => t.key === team.icon)?.url} />
+									<AvatarImage src={grants?.find((t) => t.key === team.icon)?.url} />
 								) : (
 									<AvatarFallback className="flex items-center justify-center bg-primary font-bold text-primary-foreground">
 										{team.name

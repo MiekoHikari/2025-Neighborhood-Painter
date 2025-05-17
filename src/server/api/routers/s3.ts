@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
-import { teamEvents } from "./team";
 import { deletePresignedUrl, getOrCreatePresignedUrl, getPresignedUrlsForSlugs, getUploadUrl, updatePresignedUrl } from "~/server/lib/s3";
 
 const s3Router = createTRPCRouter({
