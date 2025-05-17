@@ -34,7 +34,7 @@ model S3Grants {
     team_id     String
     url         String  @unique
     created_at DateTime @default(now())
-    expired_at DateTime?
+    expired_at DateTime @default(now())
 
     team       Team    @relation(fields: [team_id], references: [uniqueId], onDelete: Cascade)
 

@@ -6,9 +6,8 @@ import { Geist } from "next/font/google";
 import Sidebar from "./_components/sidebar";
 import TeamSidebar from "./_components/teamSidebar";
 import Navbar from "./_components/navbar";
-import { TeamProvider } from "../_lib/teamContext";
-import { S3Provider } from "../_lib/s3Context";
 import { SessionProvider } from "next-auth/react";
+import S3GrantsProvider from "../_lib/s3GrantsProvider";
 
 export const metadata: Metadata = {
 	title: "Create T3 App",
@@ -26,22 +25,20 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
 		<SessionProvider>
-			<TeamProvider>
-				<S3Provider>
-					<main className="h-[100vh]">
-						<Sidebar />
-						<div className="h-full pl-[60px]">
-							<div className="flex h-full gap-x-3">
-								<TeamSidebar />
-								<div className="h-full flex-1">
-									<Navbar />
-									{children}
-								</div>
+			<S3GrantsProvider>
+				<main className="h-[100vh]">
+					<Sidebar />
+					<div className="h-full pl-[60px]">
+						<div className="flex h-full gap-x-3">
+							<TeamSidebar />
+							<div className="h-full flex-1">
+								<Navbar />
+								{children}
 							</div>
 						</div>
-					</main>
-				</S3Provider>
-			</TeamProvider>
+					</div>
+				</main>
+			</S3GrantsProvider>
 		</SessionProvider>
 	);
 }
