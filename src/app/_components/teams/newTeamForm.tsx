@@ -19,10 +19,6 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { api } from "~/trpc/react";
 
-// TODO: Implement feature to joining teams
-// TODO: Validate image files properly
-// File Size Limit 10MB
-
 const formSchema = z.object({
 	name: z
 		.string()
@@ -58,8 +54,9 @@ function NewTeamForm({ setDialogOpen }: Readonly<NewTeamFormProps>) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitStatus, setSubmitStatus] = useState<string | null>(null);
 
-	const preSigner = api.s3.create.useMutation();
+	const preSigner = api.s3.CreateOrUpdate.useMutation();
 	const teamCreator = api.team.create.useMutation();
+	const tRPCutils = api.useUtils();
 
 	const form = useForm<FormData>({
 		resolver: zodResolver(formSchema),
@@ -84,8 +81,20 @@ function NewTeamForm({ setDialogOpen }: Readonly<NewTeamFormProps>) {
 
 				setSubmitStatus("Uploading Icon...");
 
+				const fileSize = data.image.size;
+				if (fileSize > 10 * 1024 * 1024) {
+					throw new Error("File size exceeds 10MB limit");
+				}
+
+				if (!data.image.type.startsWith("image/")) {
+					throw new Error("Invalid file type. Only images are allowed.");
+				}
+
+				// Estimate how long the upload will take based on the file size
+
 				const s3grant = await preSigner.mutateAsync({
 					objectKey: iconObjectKey,
+					expiresIn: 60
 				});
 
 				const uploadResponse = await fetch(s3grant, {
@@ -101,6 +110,10 @@ function NewTeamForm({ setDialogOpen }: Readonly<NewTeamFormProps>) {
 				}
 
 				setDialogOpen(false);
+
+				await tRPCutils.team.readAll.refetch();
+				await tRPCutils.s3.ReadMany.refetch();
+
 				form.reset();
 			}
 		} catch (error) {
